@@ -1,7 +1,7 @@
 server {
     listen 80;
 
-    server_name 35.242.170.205;
+    server_name my-ansible-project.duckdns.org www.my-ansible-project.duckdns.org;
 
     access_log /var/log/nginx/access.log;
     error_log /var/log/nginx/error.log;

@@ -2,6 +2,7 @@
 - name: Installation
   hosts: all
   become: True
+  gather_facts: True
   tasks:
     - name: add universe repository for bionic
       apt_repository: 
@@ -9,22 +10,31 @@
         state: present
       when: ansible_distribution_release == 'bionic'
 
+    - name: add repository for certbot
+      apt_repository:
+        repo: 'ppa:certbot/certbot'
+
 #------------------------------------------------------------------------------------------------------#
 #                                   BASIC SETUP AND INSTALLATION
 #------------------------------------------------------------------------------------------------------#
     - name: Install a list of packages
       apt:
         name: "{{ packages }}"
+        update_cache: yes
       vars:
         packages:
         - locales
         - build-essential
         - python3-apt
         - python3-pip
+        - python3-dev
         - htop
         - python3-setuptools
         - git
         - nginx
+        - curl
+        - python3-certbot-nginx
+        - certbot
         state: forcereinstall
 
     - name: Install pip packages
@@ -51,7 +61,104 @@
     - name: Pull project from github
       git:
         repo: 'https://github.com/KathurimaKimathi/Ansible-deploy.git'
-        dest: kathurima/
-        update: no
-          
+        dest: ansible/
+        update: yes
+
+    - name: install virtualenv
+      pip: 
+        name: 
+          - virtualenv
     
+    - name: install virtualenv
+      pip: name=virtualenv
+          
+    - name: create virtualenv
+      command: /usr/local/bin/virtualenv ansible/myprojectenv
+      
+    - name: installing requirements
+      pip:
+        requirements: /home/kathurima/ansible/requirements.txt
+        virtualenv: /home/kathurima/ansible/myprojectenv
+        virtualenv_python: python3.6
+
+    - name: Recursively change ownership of a directory
+      file:
+        path: /home/kathurima/ansible
+        state: directory
+        recurse: yes
+        owner: kathurima
+        
+    - name: configure gunicorn
+      copy:
+        src: /home/kathurima/Documents/Personal/myproject/myproject.service
+        dest: /etc/systemd/system/
+
+    - name: stop gunicorn
+      service:
+        name: myproject
+        state: stopped
+      become: yes
+
+    - name: start gunicorn
+      service:
+        name: myproject
+        state: started
+      become: yes
+
+    - name: restarting gunicorn
+      service:
+        name: myproject
+        state: restarted
+      become: yes
+
+    - name: ensure nginx is at the latest version
+      apt: name=nginx state=latest
+      become: yes
+    - name: start nginx
+      service:
+          name: nginx
+          state: started
+      become: yes
+
+    - name: copy the nginx config file and restart nginx
+      copy:
+        src: /home/kathurima/Documents/Personal/myproject/nginxconfig
+        dest: /etc/nginx/sites-available
+      become: yes
+
+    - name: create symlink
+      file:
+        src: /etc/nginx/sites-available/nginxconfig
+        dest: /etc/nginx/sites-enabled/nginxconfig
+        state: link
+      become: yes
+
+    - name: stop nginx
+      service:
+        name: nginx
+        state: stopped
+      become: yes
+
+    - name: start nginx
+      service:
+        name: nginx
+        state: started
+      become: yes
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    - name: Allow OpenSSH
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Allow Nginx Full
+      ufw:
+        rule: allow
+        name: Nginx Full
+
+    - name: Obtain SSL certificate
+      command: certbot --nginx -d my-ansible-project.duckdns.org -d www.my-ansible-project.duckdns.org
+      become: yes

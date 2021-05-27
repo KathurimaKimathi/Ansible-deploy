@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve myproject
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/home/kathurima/ansible
+Environment="PATH=/home/kathurima/ansible/myprojectenv/bin"
+ExecStart=/home/kathurima/ansible/myprojectenv/bin/gunicorn --workers 3 --bind 127.0.0.1:9090 wsgi:app
+
+[Install]
+WantedBy=multi-user.target

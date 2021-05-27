@@ -1,0 +1,30 @@
+---
+- name: Installation
+  hosts: all
+  become: True
+  gather_facts: True
+
+  tasks:
+    - name: add repository for certbot
+      apt_repository:
+        repo: 'ppa:certbot/certbot'
+        state: present
+      when: ansible_distribution_release == 'bionic'
+                    
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    - name: Allow OpenSSH
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Allow Nginx Full
+      ufw:
+        rule: allow
+        name: Nginx Full
+
+    - name: Obtain SSL certificate
+      command: certbot --nginx -d my-ansible-project.duckdns.org -d www.my-ansible-project.duckdns.org
+      become: yes
