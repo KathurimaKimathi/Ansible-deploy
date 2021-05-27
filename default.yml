@@ -1,0 +1,7 @@
+certbot_site_names: {
+    remote: "my-ansible-project.duckdns.org",
+ }
+ 
+certbot_package: "python3-certbot-nginx"
+certbot_plugin: "nginx"
+certbot_mail_address: kathurima@healthcloud.co.ke

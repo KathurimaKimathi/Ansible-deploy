@@ -87,7 +87,7 @@
         state: directory
         recurse: yes
         owner: kathurima
-        
+
     - name: configure gunicorn
       copy:
         src: /home/kathurima/Documents/Personal/myproject/myproject.service
@@ -158,7 +158,3 @@
       ufw:
         rule: allow
         name: Nginx Full
-
-    - name: Obtain SSL certificate
-      command: certbot --nginx -d my-ansible-project.duckdns.org -d www.my-ansible-project.duckdns.org
-      become: yes
