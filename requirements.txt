@@ -1,0 +1,5 @@
+ansible
+Fabric3
+Flask
+gunicorn
+setuptools-rust
